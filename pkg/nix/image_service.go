@@ -183,8 +183,8 @@ func getNixStorePath(ctx context.Context, ref string, system string) string {
 		":latest",
 	)
 
-	if strings.HasPrefix(path, "/_multiarch/") {
-		path, _ = strings.CutPrefix(path, "/_multiarch/")
+	if strings.HasPrefix(path, "/multiarch/") {
+		path, _ = strings.CutPrefix(path, "/multiarch/")
 
 		pathsPerSystem := map[string]string{}
 
