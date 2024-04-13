@@ -51,7 +51,7 @@ func NewImageService(ctx context.Context, containerdAddr string, opts ...ImageSe
 
 	var system string
 	if goruntime.GOOS == "linux" && goruntime.GOARCH == "amd64" {
-		system = "x86-64-linux"
+		system = "x86_64-linux"
 	} else if goruntime.GOOS == "linux" && goruntime.GOARCH == "arm64" {
 		system = "aarch64-linux"
 	} else {
