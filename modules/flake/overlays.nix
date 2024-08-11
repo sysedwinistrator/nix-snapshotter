@@ -9,9 +9,7 @@
 
       k3s = super.k3s_1_30.override {
         buildGoModule = args: super.buildGoModule (args // super.lib.optionalAttrs (args.pname != "k3s-cni-plugins" && args.pname != "k3s-containerd") {
-          vendorHash = {
-            "sha256-XtTahFaWnuHzKDI/U4d/j4C4gRxH163MCGEEM4hu/WM=" = "sha256-XuMP+ffwTdXKL9q9+ZJUQc5ghGEcdY9UdefjCD19OUE=";
-          }.${args.vendorHash};
+          vendorHash = "sha256-9i0vY+CqrLDKYBZPooccX7OtFhS3//mpKTLntvPYDJo=";
           patches = (args.patches or []) ++ [
             ./patches/k3s-nix-snapshotter.patch
           ];
