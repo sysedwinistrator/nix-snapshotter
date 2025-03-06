@@ -11,6 +11,7 @@
         vendorHash = {
           "sha256-fs9p6ywS5XCeJSF5ovDG40o+H4p4QmEJ0cvU5T9hwuA=" = "sha256-htanp0VOMadzoIyPUT8kOTSb58sz5DHlVBVGbY13ejU=";
           "sha256-q/cRKuqXuzPcLEYD+BH82ZAc+ZgGIqKWLsM1E4uQsok=" = "sha256-tJBi4b3OGrGbc49+LNx0PXwj9NuvBB55DNvIG1VCMh8=";
+          "sha256-HTUFv8WBIDiBQ860p3RiROF+kDzBekvgBAr2TJh036E=" =  "sha256-Wzd0ief4HnMc/EW+AZOabTdl2yYJWohn51Unw1Nj850=";
         }.${args.vendorHash};
         # Source https://patch-diff.githubusercontent.com/raw/k3s-io/k3s/pull/9319.patch
         # Remove when merged
