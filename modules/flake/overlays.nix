@@ -13,6 +13,7 @@
           "sha256-q/cRKuqXuzPcLEYD+BH82ZAc+ZgGIqKWLsM1E4uQsok=" = "sha256-tJBi4b3OGrGbc49+LNx0PXwj9NuvBB55DNvIG1VCMh8=";
           "sha256-HTUFv8WBIDiBQ860p3RiROF+kDzBekvgBAr2TJh036E=" = "sha256-Wzd0ief4HnMc/EW+AZOabTdl2yYJWohn51Unw1Nj850=";
           "sha256-G7RUyFzg3B4X0tdKmD1ep9a4cnVkUmFqBP5t1s8uFLc=" = "sha256-nHlMqR3fkt+tLb4K0P5PWQ9Fj7J9vzy/01HfCdsJODY=";
+          "sha256-FQu2Chk463c+/VYcOhfU8xIxm/ZNe1GumkEH/u2DIt0=" = "sha256-Y1m27ANqY7pWJUpnQ0df947y9JArOkuFL7kVjJZGSrA=";
         }.${args.vendorHash};
         # Source https://patch-diff.githubusercontent.com/raw/k3s-io/k3s/pull/9319.patch
         # Remove when merged
