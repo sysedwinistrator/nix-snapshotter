@@ -272,7 +272,11 @@ func writeNixClosureLayer(ctx context.Context, w io.Writer, nixStorePaths, copyT
 
 	}
 
-	storePathRegex := regexp.MustCompile("/nix/store/[0-9a-z]{32}-[-.+_0-9a-zA-Z]+")
+	nixStoreDir := os.Getenv("NIX_STORE")
+	if nixStoreDir == "" {
+		nixStoreDir = "/nix/store"
+	}
+	storePathRegex := regexp.MustCompile(fmt.Sprintf("%s/[0-9a-z]{32}-[-.+_0-9a-zA-Z]+", nixStoreDir))
 
 	// For each copyToRoot, walk the store path locally and create a symlink for
 	// each file from the store path to a path relative to the rootfs' root.
