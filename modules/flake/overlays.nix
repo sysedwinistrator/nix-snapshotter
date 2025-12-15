@@ -32,18 +32,17 @@
       inherit (inputs) globset;
     };
 
-    k3s = super.k3s_1_30.override {
-      buildGoModule = args: super.buildGoModule (args // super.lib.optionalAttrs (args.pname != "k3s-cni-plugins" && args.pname != "k3s-containerd") {
+    k3s = super.k3s_1_34.overrideAttrs (finalAttrs: oldAttrs:
+      super.lib.optionalAttrs (oldAttrs.pname != "k3s-cni-plugins" && oldAttrs.pname != "k3s-containerd") {
         vendorHash = {
-          "sha256-qEvdBT3noOtKdIdHDJZChowXzQMpVpY/l1ioTJCGVJ4=" = "sha256-fwhwoK+ID4BZtI6cRUQjkR9w2IVpaCrYLrfy8+irq5w=";
-        }.${args.vendorHash};
+          "sha256-IJi5gVxBsAjeQHi5rQpNRvWOXuNPx2Rtsy18VL+2Yxo=" = "sha256-qAGEIGdtjk4FI1sUJnEwSyBvitEtXikazKfW/YpGrIY=";
+        }.${oldAttrs.vendorHash};
         # Source https://patch-diff.githubusercontent.com/raw/k3s-io/k3s/pull/9319.patch
         # Remove when merged
-        patches = (args.patches or []) ++ [
+        patches = (oldAttrs.patches or []) ++ [
           ./patches/k3s-nix-snapshotter.patch
         ];
       });
-    };
   };
 
   perSystem = { system, ... }: {

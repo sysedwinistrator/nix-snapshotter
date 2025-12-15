@@ -1,42 +1,119 @@
-commit 8f9b84dbc6e881237a1a58b31cfa880c7688485b
-Author: Edgar Lee <edgarhinshunlee@gmail.com>
-Date:   Wed Feb 14 05:27:28 2024 -0500
+From 2f2ba601ee38d70eced30cf42ea63ad3eef7e2ae Mon Sep 17 00:00:00 2001
+From: Edwin Mackenzie-Owen <edwin.mowen@gmail.com>
+Date: Wed, 2 Apr 2025 20:11:05 +0200
+Subject: [PATCH] Add nix-snapshotter support to the embedded containerd
 
-    Add nix-snapshotter support to the embedded containerd
-    
-    Signed-off-by: Edgar Lee <edgarhinshunlee@gmail.com>
+---
+ go.mod                                 |  7 +++++++
+ go.sum                                 | 13 +++++++++++--
+ pkg/agent/config/config_linux.go       |  6 ++++++
+ pkg/agent/containerd/config_linux.go   |  5 +++++
+ pkg/agent/containerd/config_windows.go |  4 ++++
+ pkg/agent/templates/templates.go       | 10 +++++++++-
+ pkg/containerd/builtins_linux.go       |  1 +
+ pkg/containerd/utility_linux.go        |  5 +++++
+ 8 files changed, 48 insertions(+), 3 deletions(-)
 
 diff --git a/go.mod b/go.mod
-index e9a5585fb2..7ff6cabb87 100644
+index 7c59ff1a74..6da6f0588d 100644
 --- a/go.mod
 +++ b/go.mod
-@@ -128,6 +128,7 @@ require (
- 	github.com/opencontainers/runc v1.2.6
+@@ -121,6 +121,7 @@ require (
+ 	github.com/opencontainers/cgroups v0.0.4
  	github.com/opencontainers/selinux v1.12.0
  	github.com/otiai10/copy v1.7.0
-+	github.com/pdtpartners/nix-snapshotter v0.2.3-0.20250822015441-4ad7763d5600
++	github.com/pdtpartners/nix-snapshotter v0.2.1
  	github.com/pkg/errors v0.9.1
- 	github.com/prometheus/client_golang v1.22.0
- 	github.com/prometheus/common v0.63.0
+ 	github.com/prometheus/client_golang v1.23.2
+ 	github.com/prometheus/common v0.66.1
+@@ -192,6 +193,8 @@ require (
+ 	cel.dev/expr v0.24.0 // indirect
+ 	dario.cat/mergo v1.0.1 // indirect
+ 	filippo.io/edwards25519 v1.1.0 // indirect
++	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 // indirect
++	github.com/AdamKorcz/go-118-fuzz-build v0.0.0-20231105174938-2b5cbb29f3e2 // indirect
+ 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
+ 	github.com/JeffAshton/win_pdh v0.0.0-20161109143554-76bb4ee9f0ab // indirect
+ 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
+@@ -216,6 +219,7 @@ require (
+ 	github.com/container-storage-interface/spec v1.9.0 // indirect
+ 	github.com/containerd/btrfs/v2 v2.0.0 // indirect
+ 	github.com/containerd/console v1.0.5 // indirect
++	github.com/containerd/containerd v1.7.23 // indirect
+ 	github.com/containerd/continuity v0.4.5 // indirect
+ 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
+ 	github.com/containerd/fifo v1.1.0 // indirect
+@@ -301,6 +305,7 @@ require (
+ 	github.com/hanwen/go-fuse/v2 v2.8.0 // indirect
+ 	github.com/hashicorp/errwrap v1.1.0 // indirect
+ 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
++	github.com/hashicorp/go-multierror v1.1.1 // indirect
+ 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
+ 	github.com/hashicorp/go-version v1.7.0 // indirect
+ 	github.com/hashicorp/golang-lru v1.0.2 // indirect
+@@ -400,6 +405,7 @@ require (
+ 	github.com/opencontainers/runtime-spec v1.2.1 // indirect
+ 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626 // indirect
+ 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
++	github.com/pelletier/go-toml v1.9.5 // indirect
+ 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+ 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+ 	github.com/petermattis/goid v0.0.0-20240813172612-4fcff4a6cae7 // indirect
+@@ -484,6 +490,7 @@ require (
+ 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 // indirect
+ 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10 // indirect
+ 	gonum.org/v1/gonum v0.16.0 // indirect
++	google.golang.org/genproto v0.0.0-20240123012728-ef4313101c80 // indirect
+ 	google.golang.org/genproto/googleapis/api v0.0.0-20250826171959-ef028d996bc1 // indirect
+ 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250826171959-ef028d996bc1 // indirect
+ 	google.golang.org/protobuf v1.36.9 // indirect
 diff --git a/go.sum b/go.sum
-index 6c71df26ce..c65fb8774d 100644
+index f0cd7a40ce..558ad0e6e4 100644
 --- a/go.sum
 +++ b/go.sum
-@@ -1454,6 +1454,8 @@ github.com/otiai10/mint v1.3.3/go.mod h1:/yxELlJQ0ufhjUwhshSj+wFjZ78CnZ48/1wtmBH
- github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
+@@ -232,6 +232,8 @@ git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGy
+ git.sr.ht/~sbinet/gg v0.3.1/go.mod h1:KGYtlADtqsqANL9ueOFkWymvzUvLMQllU5Ixo+8v3pc=
+ github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 h1:He8afgbRMd7mFxO99hRNu+6tazq8nFF9lIwo9JFroBk=
+ github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6/go.mod h1:8o94RPi1/7XTJvwPpRSzSUedZrtlirdB3r9Z20bi2f8=
++github.com/AdamKorcz/go-118-fuzz-build v0.0.0-20231105174938-2b5cbb29f3e2 h1:dIScnXFlF784X79oi7MzVT6GWqr/W1uUt0pB5CsDs9M=
++github.com/AdamKorcz/go-118-fuzz-build v0.0.0-20231105174938-2b5cbb29f3e2/go.mod h1:gCLVsLfv1egrcZu+GoJATN5ts75F2s62ih/457eWzOw=
+ github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEKWjV8V+WSxDXJ4NFATAsZjh8iIbsQIg=
+ github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
+ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+@@ -333,6 +335,8 @@ github.com/containerd/cgroups/v3 v3.0.5 h1:44na7Ud+VwyE7LIoJ8JTNQOa549a8543BmzaJ
+ github.com/containerd/cgroups/v3 v3.0.5/go.mod h1:SA5DLYnXO8pTGYiAHXz94qvLQTKfVM5GEVisn4jpins=
+ github.com/containerd/console v1.0.5 h1:R0ymNeydRqH2DmakFNdmjR2k0t7UPuiOV/N/27/qqsc=
+ github.com/containerd/console v1.0.5/go.mod h1:YynlIjWYF8myEu6sdkwKIvGQq+cOckRm6So2avqoYAk=
++github.com/containerd/containerd v1.7.23 h1:H2CClyUkmpKAGlhQp95g2WXHfLYc7whAuvZGBNYOOwQ=
++github.com/containerd/containerd v1.7.23/go.mod h1:7QUzfURqZWCZV7RLNEn1XjUCQLEf0bkaK4GjUaZehxw=
+ github.com/containerd/containerd/api v1.9.0 h1:HZ/licowTRazus+wt9fM6r/9BQO7S0vD5lMcWspGIg0=
+ github.com/containerd/containerd/api v1.9.0/go.mod h1:GhghKFmTR3hNtyznBoQ0EMWr9ju5AqHjcZPsSpTKutI=
+ github.com/containerd/continuity v0.4.5 h1:ZRoN1sXq9u7V6QoHMcVWGhOwDFqZ4B9i5H6un1Wh0x4=
+@@ -1105,6 +1109,10 @@ github.com/otiai10/mint v1.3.3 h1:7JgpsBaN0uMkyju4tbYHu0mnM55hNKVYLsXmwr15NQI=
+ github.com/otiai10/mint v1.3.3/go.mod h1:/yxELlJQ0ufhjUwhshSj+wFjZ78CnZ48/1wtmBH1OTc=
  github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 h1:onHthvaw9LFnH4t2DcNVpwGmV9E1BkGknEliJkfwQj0=
  github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58/go.mod h1:DXv8WO4yhMYhSNPKjeNKa5WY9YCIEBRbNzFFPJbWO6Y=
-+github.com/pdtpartners/nix-snapshotter v0.2.3-0.20250822015441-4ad7763d5600 h1:FW03Hve1dHVoYuUgodgvBxlqzaMZQUREtAdxfgx4zvI=
-+github.com/pdtpartners/nix-snapshotter v0.2.3-0.20250822015441-4ad7763d5600/go.mod h1:MKa+V5fH15XmLCDt+s8qRQeIAaadaJ3/4+/oD7f0K0k=
- github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
- github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
- github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
-@@ -2440,8 +2442,9 @@ gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
++github.com/pdtpartners/nix-snapshotter v0.2.1 h1:NVmZbcDvD5UWNs4oF4vMmhRTlcf596+/fSPb6koiGKs=
++github.com/pdtpartners/nix-snapshotter v0.2.1/go.mod h1:MKa+V5fH15XmLCDt+s8qRQeIAaadaJ3/4+/oD7f0K0k=
++github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
++github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
+ github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
+ github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
+ github.com/peterbourgon/diskv v2.0.1+incompatible h1:UBdAOUP5p4RWqPBg048CAvpKN+vxiaj6gdUUzhl4XmI=
+@@ -1770,6 +1778,7 @@ google.golang.org/appengine v1.6.1/go.mod h1:i06prIuMbXzDqacNJfV5OdTW448YApPu5ww
+ google.golang.org/appengine v1.6.5/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
+ google.golang.org/appengine v1.6.6/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
+ google.golang.org/appengine v1.6.7/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
++google.golang.org/genproto v0.0.0-20230525234035-dd9d682886f9 h1:jLonXEme2DCOtOpnGWxpvzXCE7lc9QmQbjEX8tt3I8g=
+ google.golang.org/genproto v0.0.0-20230525234035-dd9d682886f9/go.mod h1:9ExIQyXL5hZrHzQceCwuSYwZZ5QZBazOcprJ5rgs3lY=
+ google.golang.org/genproto/googleapis/api v0.0.0-20230525234020-1aefcd67740a/go.mod h1:ts19tUU+Z0ZShN1y3aPyq2+O3d5FUNNgT6FtOzmrNn8=
+ google.golang.org/genproto/googleapis/api v0.0.0-20230525234035-dd9d682886f9/go.mod h1:vHYtlOoi6TsQ3Uk2yxR7NI5z8uoV+3pZtR4jmHIkRig=
+@@ -1843,8 +1852,8 @@ gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
+ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+ gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
  gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
- gotest.tools/v3 v3.0.2/go.mod h1:3SzNCllyD9/Y+b5r9JIKQ474KzkZyqLqEfYqMsX94Bk=
- gotest.tools/v3 v3.0.3/go.mod h1:Z7Lb0S5l+klDB31fvDQX8ss/FlKDxtlFlw3Oa8Ymbl8=
--gotest.tools/v3 v3.4.0 h1:ZazjZUfuVeZGLAmlKKuyv3IKP5orXcwtOwDQH6YVr6o=
- gotest.tools/v3 v3.4.0/go.mod h1:CtbdzLSsqVhDgMtKsx03ird5YTGB3ar27v0u/yKBW5g=
+-gotest.tools/v3 v3.5.0 h1:Ljk6PdHdOhAb5aDMWXjDLMMhph+BpztA4v1QdqEW2eY=
+-gotest.tools/v3 v3.5.0/go.mod h1:isy3WKz7GK6uNw/sbHzfKBLvlvXwUyV06n6brMxxopU=
 +gotest.tools/v3 v3.5.1 h1:EENdUnS3pdur5nybKYIh2Vfgc8IUNBjxDPSjtiJcOzU=
 +gotest.tools/v3 v3.5.1/go.mod h1:isy3WKz7GK6uNw/sbHzfKBLvlvXwUyV06n6brMxxopU=
  grpc.go4.org v0.0.0-20170609214715-11d0a25b4919/go.mod h1:77eQGdRu53HpSqPFJFmuJdjuHRquDANNeA4x7B8WQ9o=
@@ -60,18 +137,18 @@ index 34d8216c03..6ea8de8b87 100644
  
  	return nil
 diff --git a/pkg/agent/containerd/config_linux.go b/pkg/agent/containerd/config_linux.go
-index b05a697f3e..c854ac603e 100644
+index 0ef89e5e33..c8ea9a224b 100644
 --- a/pkg/agent/containerd/config_linux.go
 +++ b/pkg/agent/containerd/config_linux.go
 @@ -17,6 +17,7 @@ import (
  	"github.com/k3s-io/k3s/pkg/daemons/config"
  	"github.com/k3s-io/k3s/pkg/version"
- 	"github.com/opencontainers/runc/libcontainer/userns"
+ 	"github.com/moby/sys/userns"
 +	"github.com/pdtpartners/nix-snapshotter/pkg/nix"
  	pkgerrors "github.com/pkg/errors"
  	"github.com/sirupsen/logrus"
  	"golang.org/x/sys/unix"
-@@ -125,3 +126,7 @@ func FuseoverlayfsSupported(root string) error {
+@@ -133,3 +134,7 @@ func FuseoverlayfsSupported(root string) error {
  func StargzSupported(root string) error {
  	return stargz.Supported(root)
  }
@@ -80,31 +157,31 @@ index b05a697f3e..c854ac603e 100644
 +	return nix.Supported(root)
 +}
 diff --git a/pkg/agent/containerd/config_windows.go b/pkg/agent/containerd/config_windows.go
-index 4ca7ec1156..2a9f2dbd4b 100644
+index 5935de31c1..c4004bf645 100644
 --- a/pkg/agent/containerd/config_windows.go
 +++ b/pkg/agent/containerd/config_windows.go
-@@ -74,3 +74,7 @@ func FuseoverlayfsSupported(root string) error {
+@@ -78,3 +78,7 @@ func FuseoverlayfsSupported(root string) error {
  func StargzSupported(root string) error {
  	return pkgerrors.WithMessagef(util3.ErrUnsupportedPlatform, "stargz is not supported")
  }
 +
 +func NixSupported(root string) error {
-+	return errors.Wrapf(util3.ErrUnsupportedPlatform, "nix is not supported")
++	return pkgerrors.WithMessagef(util3.ErrUnsupportedPlatform, "nix is not supported")
 +}
 diff --git a/pkg/agent/templates/templates.go b/pkg/agent/templates/templates.go
-index a46efa8852..0604d9fffe 100644
+index 78260fb895..64befaa3a6 100644
 --- a/pkg/agent/templates/templates.go
 +++ b/pkg/agent/templates/templates.go
-@@ -75,7 +75,7 @@ state = {{ printf "%q" .NodeConfig.Containerd.State }}
+@@ -82,7 +82,7 @@ state = {{ printf "%q" .NodeConfig.Containerd.State }}
  {{- if .NodeConfig.AgentConfig.Snapshotter }}
  [plugins."io.containerd.grpc.v1.cri".containerd]
    snapshotter = "{{ .NodeConfig.AgentConfig.Snapshotter }}"
 -  disable_snapshot_annotations = {{ if eq .NodeConfig.AgentConfig.Snapshotter "stargz" }}false{{else}}true{{end}}
-+  disable_snapshot_annotations = {{ if or (eq .NodeConfig.AgentConfig.Snapshotter "stargz") (eq .NodeConfig.AgentConfig.Snapshotter "nix") }}false{{else}}true{{end}}
++  disable_snapshot_annotations = {{ if or (eq .NodeConfig.AgentConfig.Snapshotter "stargz") (eq .NodeConfig.AgnetConfig.Snapshotter "nix") }}false{{else}}true{{end}}
    {{ if .NodeConfig.DefaultRuntime }}default_runtime_name = "{{ .NodeConfig.DefaultRuntime }}"{{end}}
  {{ if eq .NodeConfig.AgentConfig.Snapshotter "stargz" }}
  {{ if .NodeConfig.AgentConfig.ImageServiceSocket }}
-@@ -100,6 +100,14 @@ enable_keychain = true
+@@ -107,6 +107,14 @@ enable_keychain = true
  {{end}}
  {{end}}
  {{end}}
@@ -120,22 +197,22 @@ index a46efa8852..0604d9fffe 100644
  
  {{- if or .NodeConfig.AgentConfig.CNIBinDir .NodeConfig.AgentConfig.CNIConfDir }}
 diff --git a/pkg/containerd/builtins_linux.go b/pkg/containerd/builtins_linux.go
-index a0ea4dc496..98c443625d 100644
+index ff31fa41e1..dcefa1884f 100644
 --- a/pkg/containerd/builtins_linux.go
 +++ b/pkg/containerd/builtins_linux.go
-@@ -32,4 +32,5 @@ import (
- 	_ "github.com/containerd/fuse-overlayfs-snapshotter/plugin"
+@@ -34,4 +34,5 @@ import (
+ 	_ "github.com/containerd/fuse-overlayfs-snapshotter/v2/plugin"
  	_ "github.com/containerd/stargz-snapshotter/service/plugin"
- 	_ "github.com/containerd/zfs/plugin"
+ 	_ "github.com/containerd/zfs/v2/plugin"
 +	_ "github.com/pdtpartners/nix-snapshotter/pkg/plugin"
  )
 diff --git a/pkg/containerd/utility_linux.go b/pkg/containerd/utility_linux.go
-index 76ff569b41..b6f2d0cfeb 100644
+index 18eadecf24..c59a80a557 100644
 --- a/pkg/containerd/utility_linux.go
 +++ b/pkg/containerd/utility_linux.go
 @@ -6,6 +6,7 @@ import (
- 	"github.com/containerd/containerd/snapshots/overlay/overlayutils"
- 	fuseoverlayfs "github.com/containerd/fuse-overlayfs-snapshotter"
+ 	"github.com/containerd/containerd/v2/plugins/snapshots/overlay/overlayutils"
+ 	fuseoverlayfs "github.com/containerd/fuse-overlayfs-snapshotter/v2"
  	stargz "github.com/containerd/stargz-snapshotter/service"
 +	"github.com/pdtpartners/nix-snapshotter/pkg/nix"
  )
@@ -149,15 +226,6 @@ index 76ff569b41..b6f2d0cfeb 100644
 +func NixSupported(root string) error {
 +	return nix.Supported(root)
 +}
-diff --git a/pkg/containerd/utility_windows.go b/pkg/containerd/utility_windows.go
-index ecb741b98f..065e640442 100644
---- a/pkg/containerd/utility_windows.go
-+++ b/pkg/containerd/utility_windows.go
-@@ -19,3 +19,7 @@ func FuseoverlayfsSupported(root string) error {
- func StargzSupported(root string) error {
- 	return pkgerrors.WithMessagef(util2.ErrUnsupportedPlatform, "stargz is not supported")
- }
-+
-+func NixSupported(root string) error {
-+	return errors.Wrapf(util2.ErrUnsupportedPlatform, "nix is not supported")
-+}
+-- 
+2.51.2
+
