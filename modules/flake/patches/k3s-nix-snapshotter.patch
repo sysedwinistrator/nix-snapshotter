@@ -1,4 +1,4 @@
-From 2f2ba601ee38d70eced30cf42ea63ad3eef7e2ae Mon Sep 17 00:00:00 2001
+From 5c1271283537e0b1bd79705e3b4a63ef92fff631 Mon Sep 17 00:00:00 2001
 From: Edwin Mackenzie-Owen <edwin.mowen@gmail.com>
 Date: Wed, 2 Apr 2025 20:11:05 +0200
 Subject: [PATCH] Add nix-snapshotter support to the embedded containerd
@@ -15,19 +15,19 @@ Subject: [PATCH] Add nix-snapshotter support to the embedded containerd
  8 files changed, 48 insertions(+), 3 deletions(-)
 
 diff --git a/go.mod b/go.mod
-index 7c59ff1a74..6da6f0588d 100644
+index eff1ce7255..e167cb5cfb 100644
 --- a/go.mod
 +++ b/go.mod
-@@ -121,6 +121,7 @@ require (
- 	github.com/opencontainers/cgroups v0.0.4
+@@ -123,6 +123,7 @@ require (
+ 	github.com/opencontainers/image-spec v1.1.1
  	github.com/opencontainers/selinux v1.12.0
  	github.com/otiai10/copy v1.7.0
 +	github.com/pdtpartners/nix-snapshotter v0.2.1
  	github.com/pkg/errors v0.9.1
  	github.com/prometheus/client_golang v1.23.2
  	github.com/prometheus/common v0.66.1
-@@ -192,6 +193,8 @@ require (
- 	cel.dev/expr v0.24.0 // indirect
+@@ -195,6 +196,8 @@ require (
+ 	cyphar.com/go-pathrs v0.2.1 // indirect
  	dario.cat/mergo v1.0.1 // indirect
  	filippo.io/edwards25519 v1.1.0 // indirect
 +	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 // indirect
@@ -35,7 +35,7 @@ index 7c59ff1a74..6da6f0588d 100644
  	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
  	github.com/JeffAshton/win_pdh v0.0.0-20161109143554-76bb4ee9f0ab // indirect
  	github.com/MakeNowJust/heredoc v1.0.0 // indirect
-@@ -216,6 +219,7 @@ require (
+@@ -219,6 +222,7 @@ require (
  	github.com/container-storage-interface/spec v1.9.0 // indirect
  	github.com/containerd/btrfs/v2 v2.0.0 // indirect
  	github.com/containerd/console v1.0.5 // indirect
@@ -43,7 +43,7 @@ index 7c59ff1a74..6da6f0588d 100644
  	github.com/containerd/continuity v0.4.5 // indirect
  	github.com/containerd/errdefs/pkg v0.3.0 // indirect
  	github.com/containerd/fifo v1.1.0 // indirect
-@@ -301,6 +305,7 @@ require (
+@@ -304,6 +308,7 @@ require (
  	github.com/hanwen/go-fuse/v2 v2.8.0 // indirect
  	github.com/hashicorp/errwrap v1.1.0 // indirect
  	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -51,7 +51,7 @@ index 7c59ff1a74..6da6f0588d 100644
  	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
  	github.com/hashicorp/go-version v1.7.0 // indirect
  	github.com/hashicorp/golang-lru v1.0.2 // indirect
-@@ -400,6 +405,7 @@ require (
+@@ -401,6 +406,7 @@ require (
  	github.com/opencontainers/runtime-spec v1.2.1 // indirect
  	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626 // indirect
  	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
@@ -59,19 +59,19 @@ index 7c59ff1a74..6da6f0588d 100644
  	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
  	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
  	github.com/petermattis/goid v0.0.0-20240813172612-4fcff4a6cae7 // indirect
-@@ -484,6 +490,7 @@ require (
+@@ -485,6 +491,7 @@ require (
  	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 // indirect
  	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10 // indirect
  	gonum.org/v1/gonum v0.16.0 // indirect
-+	google.golang.org/genproto v0.0.0-20240123012728-ef4313101c80 // indirect
++	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
  	google.golang.org/genproto/googleapis/api v0.0.0-20250826171959-ef028d996bc1 // indirect
  	google.golang.org/genproto/googleapis/rpc v0.0.0-20250826171959-ef028d996bc1 // indirect
  	google.golang.org/protobuf v1.36.9 // indirect
 diff --git a/go.sum b/go.sum
-index f0cd7a40ce..558ad0e6e4 100644
+index b5f8508d5e..0aa49cce08 100644
 --- a/go.sum
 +++ b/go.sum
-@@ -232,6 +232,8 @@ git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGy
+@@ -234,6 +234,8 @@ git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGy
  git.sr.ht/~sbinet/gg v0.3.1/go.mod h1:KGYtlADtqsqANL9ueOFkWymvzUvLMQllU5Ixo+8v3pc=
  github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 h1:He8afgbRMd7mFxO99hRNu+6tazq8nFF9lIwo9JFroBk=
  github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6/go.mod h1:8o94RPi1/7XTJvwPpRSzSUedZrtlirdB3r9Z20bi2f8=
@@ -80,7 +80,7 @@ index f0cd7a40ce..558ad0e6e4 100644
  github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEKWjV8V+WSxDXJ4NFATAsZjh8iIbsQIg=
  github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
  github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-@@ -333,6 +335,8 @@ github.com/containerd/cgroups/v3 v3.0.5 h1:44na7Ud+VwyE7LIoJ8JTNQOa549a8543BmzaJ
+@@ -335,6 +337,8 @@ github.com/containerd/cgroups/v3 v3.0.5 h1:44na7Ud+VwyE7LIoJ8JTNQOa549a8543BmzaJ
  github.com/containerd/cgroups/v3 v3.0.5/go.mod h1:SA5DLYnXO8pTGYiAHXz94qvLQTKfVM5GEVisn4jpins=
  github.com/containerd/console v1.0.5 h1:R0ymNeydRqH2DmakFNdmjR2k0t7UPuiOV/N/27/qqsc=
  github.com/containerd/console v1.0.5/go.mod h1:YynlIjWYF8myEu6sdkwKIvGQq+cOckRm6So2avqoYAk=
@@ -89,7 +89,7 @@ index f0cd7a40ce..558ad0e6e4 100644
  github.com/containerd/containerd/api v1.9.0 h1:HZ/licowTRazus+wt9fM6r/9BQO7S0vD5lMcWspGIg0=
  github.com/containerd/containerd/api v1.9.0/go.mod h1:GhghKFmTR3hNtyznBoQ0EMWr9ju5AqHjcZPsSpTKutI=
  github.com/containerd/continuity v0.4.5 h1:ZRoN1sXq9u7V6QoHMcVWGhOwDFqZ4B9i5H6un1Wh0x4=
-@@ -1105,6 +1109,10 @@ github.com/otiai10/mint v1.3.3 h1:7JgpsBaN0uMkyju4tbYHu0mnM55hNKVYLsXmwr15NQI=
+@@ -1107,6 +1111,10 @@ github.com/otiai10/mint v1.3.3 h1:7JgpsBaN0uMkyju4tbYHu0mnM55hNKVYLsXmwr15NQI=
  github.com/otiai10/mint v1.3.3/go.mod h1:/yxELlJQ0ufhjUwhshSj+wFjZ78CnZ48/1wtmBH1OTc=
  github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 h1:onHthvaw9LFnH4t2DcNVpwGmV9E1BkGknEliJkfwQj0=
  github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58/go.mod h1:DXv8WO4yhMYhSNPKjeNKa5WY9YCIEBRbNzFFPJbWO6Y=
@@ -100,7 +100,7 @@ index f0cd7a40ce..558ad0e6e4 100644
  github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
  github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
  github.com/peterbourgon/diskv v2.0.1+incompatible h1:UBdAOUP5p4RWqPBg048CAvpKN+vxiaj6gdUUzhl4XmI=
-@@ -1770,6 +1778,7 @@ google.golang.org/appengine v1.6.1/go.mod h1:i06prIuMbXzDqacNJfV5OdTW448YApPu5ww
+@@ -1772,6 +1780,7 @@ google.golang.org/appengine v1.6.1/go.mod h1:i06prIuMbXzDqacNJfV5OdTW448YApPu5ww
  google.golang.org/appengine v1.6.5/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
  google.golang.org/appengine v1.6.6/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
  google.golang.org/appengine v1.6.7/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
@@ -108,7 +108,7 @@ index f0cd7a40ce..558ad0e6e4 100644
  google.golang.org/genproto v0.0.0-20230525234035-dd9d682886f9/go.mod h1:9ExIQyXL5hZrHzQceCwuSYwZZ5QZBazOcprJ5rgs3lY=
  google.golang.org/genproto/googleapis/api v0.0.0-20230525234020-1aefcd67740a/go.mod h1:ts19tUU+Z0ZShN1y3aPyq2+O3d5FUNNgT6FtOzmrNn8=
  google.golang.org/genproto/googleapis/api v0.0.0-20230525234035-dd9d682886f9/go.mod h1:vHYtlOoi6TsQ3Uk2yxR7NI5z8uoV+3pZtR4jmHIkRig=
-@@ -1843,8 +1852,8 @@ gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
+@@ -1845,8 +1854,8 @@ gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
  gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
  gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
  gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
@@ -227,5 +227,5 @@ index 18eadecf24..c59a80a557 100644
 +	return nix.Supported(root)
 +}
 -- 
-2.51.2
+2.52.0
 

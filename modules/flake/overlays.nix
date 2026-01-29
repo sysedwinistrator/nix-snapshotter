@@ -35,7 +35,7 @@
     k3s = super.k3s_1_34.overrideAttrs (finalAttrs: oldAttrs:
       super.lib.optionalAttrs (oldAttrs.pname != "k3s-cni-plugins" && oldAttrs.pname != "k3s-containerd") {
         vendorHash = {
-          "sha256-IJi5gVxBsAjeQHi5rQpNRvWOXuNPx2Rtsy18VL+2Yxo=" = "sha256-qAGEIGdtjk4FI1sUJnEwSyBvitEtXikazKfW/YpGrIY=";
+          "sha256-dp8SU24nuy3WmG1Zln/J2nVHnVQmVyN78FBOSxNjbF8=" = "sha256-apHB2wzK4jNYkctrI8kPdAgR6i8DYeLR/4oOgidW1sw=";
         }.${oldAttrs.vendorHash};
         # Source https://patch-diff.githubusercontent.com/raw/k3s-io/k3s/pull/9319.patch
         # Remove when merged
