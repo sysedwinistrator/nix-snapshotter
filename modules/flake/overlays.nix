@@ -36,6 +36,7 @@
       super.lib.optionalAttrs (oldAttrs.pname != "k3s-cni-plugins" && oldAttrs.pname != "k3s-containerd") {
         vendorHash = {
           "sha256-dp8SU24nuy3WmG1Zln/J2nVHnVQmVyN78FBOSxNjbF8=" = "sha256-apHB2wzK4jNYkctrI8kPdAgR6i8DYeLR/4oOgidW1sw=";
+          "sha256-R8QXwXmTKsONsbWaedFNDPdYZ82jaQ/T8S9sllqKPjk=" = "sha256-+rRluaYYz87/3pYFr3D0AzOXWILwZR9LbR3jlf29GJo=";
         }.${oldAttrs.vendorHash};
         # Source https://patch-diff.githubusercontent.com/raw/k3s-io/k3s/pull/9319.patch
         # Remove when merged
