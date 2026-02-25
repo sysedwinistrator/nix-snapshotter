@@ -1,21 +1,21 @@
-From 5ce8a36125137a86173cd914c836e6fe7f522fbd Mon Sep 17 00:00:00 2001
+From 16522d48a0b6008ad6ec7a70f5161abbea35a7b4 Mon Sep 17 00:00:00 2001
 From: Edwin Mackenzie-Owen <edwin.mowen@gmail.com>
 Date: Wed, 2 Apr 2025 20:11:05 +0200
 Subject: [PATCH] Add nix-snapshotter support to the embedded containerd
 
 ---
  go.mod                                 |  7 +++++++
- go.sum                                 | 13 +++++++++++--
+ go.sum                                 |  9 +++++++++
  pkg/agent/config/config_linux.go       |  6 ++++++
  pkg/agent/containerd/config_linux.go   |  5 +++++
  pkg/agent/containerd/config_windows.go |  4 ++++
  pkg/agent/templates/templates.go       | 10 +++++++++-
  pkg/containerd/builtins_linux.go       |  1 +
  pkg/containerd/utility_linux.go        |  5 +++++
- 8 files changed, 48 insertions(+), 3 deletions(-)
+ 8 files changed, 46 insertions(+), 1 deletion(-)
 
 diff --git a/go.mod b/go.mod
-index 44c4842343..7ff2bbc272 100644
+index 07f80cf767..41a70b0d94 100644
 --- a/go.mod
 +++ b/go.mod
 @@ -124,6 +124,7 @@ require (
@@ -68,7 +68,7 @@ index 44c4842343..7ff2bbc272 100644
  	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
  	google.golang.org/protobuf v1.36.10 // indirect
 diff --git a/go.sum b/go.sum
-index 8691b1fc0b..ba97138678 100644
+index 0ee9665480..b31b076545 100644
 --- a/go.sum
 +++ b/go.sum
 @@ -227,6 +227,8 @@ gioui.org v0.0.0-20210308172011-57750fc8a0a6/go.mod h1:RSH6KIUZ0p2xy5zHDxgAM4zum
@@ -100,7 +100,7 @@ index 8691b1fc0b..ba97138678 100644
  github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
  github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
  github.com/peterbourgon/diskv v2.0.1+incompatible h1:UBdAOUP5p4RWqPBg048CAvpKN+vxiaj6gdUUzhl4XmI=
-@@ -1729,6 +1737,7 @@ google.golang.org/appengine v1.6.1/go.mod h1:i06prIuMbXzDqacNJfV5OdTW448YApPu5ww
+@@ -1730,6 +1738,7 @@ google.golang.org/appengine v1.6.1/go.mod h1:i06prIuMbXzDqacNJfV5OdTW448YApPu5ww
  google.golang.org/appengine v1.6.5/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
  google.golang.org/appengine v1.6.6/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
  google.golang.org/appengine v1.6.7/go.mod h1:8WjMMxjGQR8xUklV/ARdw2HLXBOI7O7uCIDZVag1xfc=
@@ -108,17 +108,6 @@ index 8691b1fc0b..ba97138678 100644
  google.golang.org/genproto v0.0.0-20230525234035-dd9d682886f9/go.mod h1:9ExIQyXL5hZrHzQceCwuSYwZZ5QZBazOcprJ5rgs3lY=
  google.golang.org/genproto/googleapis/api v0.0.0-20230525234020-1aefcd67740a/go.mod h1:ts19tUU+Z0ZShN1y3aPyq2+O3d5FUNNgT6FtOzmrNn8=
  google.golang.org/genproto/googleapis/api v0.0.0-20230525234035-dd9d682886f9/go.mod h1:vHYtlOoi6TsQ3Uk2yxR7NI5z8uoV+3pZtR4jmHIkRig=
-@@ -1802,8 +1811,8 @@ gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
- gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
- gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
- gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
--gotest.tools/v3 v3.5.0 h1:Ljk6PdHdOhAb5aDMWXjDLMMhph+BpztA4v1QdqEW2eY=
--gotest.tools/v3 v3.5.0/go.mod h1:isy3WKz7GK6uNw/sbHzfKBLvlvXwUyV06n6brMxxopU=
-+gotest.tools/v3 v3.5.1 h1:EENdUnS3pdur5nybKYIh2Vfgc8IUNBjxDPSjtiJcOzU=
-+gotest.tools/v3 v3.5.1/go.mod h1:isy3WKz7GK6uNw/sbHzfKBLvlvXwUyV06n6brMxxopU=
- honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
- honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
- honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 diff --git a/pkg/agent/config/config_linux.go b/pkg/agent/config/config_linux.go
 index 4f4a227dd1..6d42e2872b 100644
 --- a/pkg/agent/config/config_linux.go
