@@ -32,20 +32,7 @@
       inherit (inputs) globset;
     };
 
-    k3s = super.k3s_1_34.overrideAttrs (finalAttrs: oldAttrs:
-      super.lib.optionalAttrs (oldAttrs.pname != "k3s-cni-plugins" && oldAttrs.pname != "k3s-containerd") {
-        vendorHash = {
-          "sha256-dp8SU24nuy3WmG1Zln/J2nVHnVQmVyN78FBOSxNjbF8=" = "sha256-apHB2wzK4jNYkctrI8kPdAgR6i8DYeLR/4oOgidW1sw=";
-          "sha256-R8QXwXmTKsONsbWaedFNDPdYZ82jaQ/T8S9sllqKPjk=" = "sha256-+rRluaYYz87/3pYFr3D0AzOXWILwZR9LbR3jlf29GJo=";
-          "sha256-ZTRcv28rgKslrDRr5y8SnQJpo2ErbURa22l1nv+4QHw=" = "sha256-GP85q1Pzr8wKWmshtvpdByQ0M0VIPfM4QuQc0hBND4s=";
-          "sha256-q3/KylcuuhUMC3ggpR8DsLjdWgtPnhCqa1HjM2sgHuo=" = "sha256-+2t4KT6v7oQwt5MwgW/GZYax9ywmGQIyx15zuFm4WLQ=";
-        }.${oldAttrs.vendorHash};
-        # Source https://patch-diff.githubusercontent.com/raw/k3s-io/k3s/pull/9319.patch
-        # Remove when merged
-        patches = (oldAttrs.patches or []) ++ [
-          ./patches/k3s-nix-snapshotter.patch
-        ];
-      });
+    k3s = super.k3s_1_34;
   };
 
   perSystem = { system, ... }: {
